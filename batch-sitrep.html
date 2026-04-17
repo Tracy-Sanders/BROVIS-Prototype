@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BROVIS Batch SITREP</title>
+  <link rel="stylesheet" href="src/brovis.css">
+  <style>
+    #app { max-width: 860px; }
+    #main { flex: 1; padding: 1.5rem 0; overflow-y: auto; }
+
+    .batch-actions {
+      display: flex;
+      gap: 0.75rem;
+      margin-bottom: 1rem;
+    }
+
+    .batch-actions button {
+      background: var(--accent-dim);
+      border: 1px solid var(--accent);
+      border-radius: var(--radius);
+      color: var(--accent);
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      padding: 0.6rem 1rem;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+
+    .batch-actions button:hover {
+      background: var(--accent);
+      color: var(--bg);
+    }
+
+    .batch-actions button.loading {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .timestamp {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      color: var(--muted);
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      margin-bottom: 0.75rem;
+    }
+
+    .sitrep-card .morning-brief {
+      margin-top: 0.9rem;
+      padding-top: 0.75rem;
+      border-top: 1px solid var(--border);
+    }
+
+    .morning-brief .sitrep-section-title {
+      margin-bottom: 0.5rem;
+    }
+
+    .morning-brief .brief-text {
+      font-size: 13px;
+      color: var(--text);
+      line-height: 1.6;
+      font-style: italic;
+    }
+
+    .widget-error {
+      color: var(--danger);
+      font-size: 12px;
+      padding: 0.5rem 0;
+    }
+  </style>
+</head>
+<body>
+  <div id="app">
+    <header id="header">
+      <div>
+        <div id="logo">BROVIS</div>
+        <div id="tagline">Batch SITREP Dashboard</div>
+      </div>
+      <nav id="quick-links">
+        <a href="/" class="quick-link">HOME</a>
+        <a href="#config" class="quick-link" onclick="location.href='/'; return false;">CONFIG</a>
+      </nav>
+    </header>
+
+    <main id="main">
+      <div class="batch-actions">
+        <button onclick="refresh()" id="refreshBtn">Refresh SITREP</button>
+      </div>
+      <div id="output"></div>
+    </main>
+  </div>
+
+  <script>
+    async function refresh() {
+      const btn = document.getElementById('refreshBtn');
+      btn.classList.add('loading');
+      btn.disabled = true;
+
+      try {
+        // Load user's config from localStorage and pass it to the API
+        const brovisConfig = JSON.parse(localStorage.getItem('brovis.config') || '{}');
+
+        const res = await fetch('/api/batch-sitrep', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(brovisConfig)
+        });
+        const data = await res.json();
+
+        if (!res.ok) {
+          document.getElementById('output').innerHTML = `<div class="brovis-error">❌ ${data.error}</div>`;
+          return;
+        }
+
+        render(data);
+      } catch (err) {
+        document.getElementById('output').innerHTML = `<div class="brovis-error">❌ Failed to load: ${err.message}</div>`;
+      } finally {
+        btn.classList.remove('loading');
+        btn.disabled = false;
+      }
+    }
+
+    function render(data) {
+      const { widgets, brief, config, timestamp } = data;
+
+      let html = `
+        <div class="timestamp">
+          Generated: ${new Date(timestamp).toLocaleString()}
+        </div>
+        <div class="sitrep-card">
+          <div class="sitrep-header">// SITREP — ${new Date(timestamp).toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' })} — ${new Date(timestamp).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}</div>
+      `;
+
+      // Bible
+      if (widgets.bible?.status === 'ok') {
+        const verse = widgets.bible.data || {};
+        html += `
+          <div class="sitrep-section sitrep-verse">
+            <div class="sitrep-section-title">WORD OF THE DAY — KJV</div>
+            <p class="verse-text">"${verse.text}"</p>
+            <div class="verse-reference">— ${verse.reference}</div>
+          </div>
+        `;
+      }
+
+      // Weather
+      if (widgets.weather?.status === 'ok') {
+        const w = widgets.weather.data || {};
+        html += `
+          <div class="sitrep-section">
+            <div class="sitrep-section-title">WEATHER</div>
+            <div class="sitrep-row">
+              <span class="sitrep-label">TEMP</span>
+              <span class="sitrep-value sitrep-temp">${w.temp}</span>
+            </div>
+            <div class="sitrep-row">
+              <span class="sitrep-label">CONDITION</span>
+              <span class="sitrep-value">${w.condition}</span>
+            </div>
+            <div class="sitrep-row">
+              <span class="sitrep-label">HUMIDITY</span>
+              <span class="sitrep-value">${w.humidity}%</span>
+            </div>
+            <div class="sitrep-row">
+              <span class="sitrep-label">WIND</span>
+              <span class="sitrep-value">${w.wind}</span>
+            </div>
+        `;
+        if (w.forecast && w.forecast.length > 0) {
+          html += `
+            <div style="margin-top: 0.75rem;">
+              <div class="sitrep-section-title" style="margin-bottom: 0.5rem;">3-DAY OUTLOOK</div>
+              <div class="forecast-row">
+          `;
+          w.forecast.forEach(f => {
+            html += `
+              <div class="forecast-day">
+                <div class="day-name">${f.day}</div>
+                <div class="day-temp">${f.high}/${f.low}</div>
+                <div class="day-cond">${f.condition}</div>
+              </div>
+            `;
+          });
+          html += `
+              </div>
+            </div>
+          `;
+        }
+        html += `</div>`;
+      } else if (widgets.weather?.status === 'error') {
+        html += `
+          <div class="sitrep-section">
+            <div class="sitrep-section-title">WEATHER</div>
+            <div class="widget-error">${widgets.weather.error}</div>
+          </div>
+        `;
+      }
+
+      // Markets
+      if (widgets.markets?.status === 'ok') {
+        const markets = widgets.markets.data || [];
+        html += `
+          <div class="sitrep-section">
+            <div class="sitrep-section-title">MARKETS</div>
+            <div class="markets-grid">
+        `;
+        markets.forEach(m => {
+          const change = parseFloat(m.change);
+          const changeClass = change > 0 ? 'up' : change < 0 ? 'down' : '';
+          html += `
+            <div class="market-item">
+              <div class="market-label">${m.label}</div>
+              <div class="market-price">${m.price}</div>
+              <div class="market-change ${changeClass}">${change > 0 ? '+' : ''}${change}%</div>
+            </div>
+          `;
+        });
+        html += `
+            </div>
+          </div>
+        `;
+      }
+
+      // Calendar
+      if (widgets.calendar?.status === 'ok') {
+        const cal = widgets.calendar.data || {};
+        const events = cal.events || [];
+        html += `
+          <div class="sitrep-section">
+            <div class="sitrep-section-title">TODAY'S SCHEDULE</div>
+        `;
+        if (events.length > 0) {
+          events.forEach(e => {
+            html += `
+              <div class="calendar-event">
+                <span class="event-time">${new Date(e.start).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}</span>
+                <span class="event-title">${e.title}</span>
+                ${e.location ? `<div class="event-location">${e.location}</div>` : ''}
+              </div>
+            `;
+          });
+        } else if (!cal.needsAuth) {
+          html += `<div class="calendar-empty">Clear day</div>`;
+        } else {
+          html += `<div class="calendar-auth">Requires authentication in <a href="/" class="auth-link">CONFIG</a></div>`;
+        }
+        html += `</div>`;
+      }
+
+      // Tasks
+      if (widgets.tasks?.status === 'ok') {
+        const tasksData = widgets.tasks.data || {};
+        const tasks = tasksData.tasks || [];
+        html += `
+          <div class="sitrep-section">
+            <div class="sitrep-section-title">TASKS</div>
+        `;
+        if (tasks.length > 0) {
+          tasks.forEach(t => {
+            html += `
+              <div class="calendar-event">
+                <span class="event-title">${t.title}</span>
+                ${t.due ? `<div class="event-location">Due: ${new Date(t.due).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</div>` : ''}
+              </div>
+            `;
+          });
+        } else if (!tasksData.needsAuth) {
+          html += `<div class="calendar-empty">No tasks</div>`;
+        } else {
+          html += `<div class="calendar-auth">Requires authentication in <a href="/" class="auth-link">CONFIG</a></div>`;
+        }
+        html += `</div>`;
+      }
+
+      // VIP Mail
+      if (widgets.gmail?.status === 'ok') {
+        const gmailData = widgets.gmail.data || {};
+        const emails = gmailData.emails || [];
+        html += `
+          <div class="sitrep-section">
+            <div class="sitrep-section-title">VIP MAIL</div>
+        `;
+        if (emails.length > 0) {
+          emails.forEach(e => {
+            html += `
+              <div class="calendar-event">
+                <span class="event-title">${e.from}</span>
+                <div class="event-location">${e.subject}</div>
+              </div>
+            `;
+          });
+        } else if (!gmailData.needsAuth) {
+          html += `<div class="calendar-empty">No unread VIP mail</div>`;
+        } else {
+          html += `<div class="calendar-auth">Requires authentication in <a href="/" class="auth-link">CONFIG</a></div>`;
+        }
+        html += `</div>`;
+      }
+
+      // News
+      if (widgets.news?.status === 'ok') {
+        const news = widgets.news.data || [];
+        html += `
+          <div class="sitrep-section">
+            <div class="sitrep-section-title">INTEL</div>
+        `;
+        news.forEach(n => {
+          html += `
+            <div class="news-item">
+              <a href="${n.url}" target="_blank" class="news-title">${n.title}</a>
+              <div class="news-source">— ${n.source}</div>
+            </div>
+          `;
+        });
+        html += `</div>`;
+      }
+
+      // Morning Brief
+      if (brief) {
+        html += `
+          <div class="morning-brief">
+            <div class="sitrep-section-title">
+              MORNING BRIEF
+              <span class="claude-badge" title="Generated by Claude · Anthropic">
+                <svg class="claude-icon" viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M13.827 3.52l8.123 14.069a1.45 1.45 0 0 1-1.256 2.179H3.306a1.45 1.45 0 0 1-1.256-2.179L10.173 3.52a1.946 1.946 0 0 1 3.654 0z"/>
+                </svg>
+                Claude
+              </span>
+            </div>
+            <p class="brief-text">${escapeHtml(brief)}</p>
+          </div>
+        `;
+      }
+
+      html += `</div>`;
+
+      document.getElementById('output').innerHTML = html;
+    }
+
+    function escapeHtml(str) {
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;');
+    }
+
+    // Load on page open
+    refresh();
+    // Auto-refresh every 5 minutes
+    setInterval(refresh, 5 * 60 * 1000);
+  </script>
+</body>
+</html>

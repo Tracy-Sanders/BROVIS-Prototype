@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="claude-dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>BROVIS</title>
+
+  <!-- PWA -->
+  <link rel="manifest" href="/manifest.json" />
+  <meta name="theme-color" content="#0a0c0f" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="BROVIS" />
+  <link rel="apple-touch-icon" href="/icons/icon-192.png" />
+
+  <!-- App meta -->
+  <meta name="description" content="Your personal intelligence dashboard. SITREP on demand." />
+  <meta name="application-name" content="BROVIS" />
+
+  <link rel="stylesheet" href="src/brovis.css" />
+</head>
+<body>
+  <div id="app">
+    <header id="header">
+      <div id="pipboy-topbar">
+        <nav id="pipboy-tabs">
+          <a href="#am-brief" class="pip-tab pip-active" data-group="brief" data-i18n="nav.brief">[ BRIEF ]</a>
+          <a href="#travel-calendar" class="pip-tab" data-group="travel" data-i18n="nav.travel">[ TRAVEL ]</a>
+          <a href="#llm-ingest" class="pip-tab" data-group="llm" data-i18n="nav.llm">[ LLM ]</a>
+        </nav>
+        <a href="#config" id="pip-settings" title="Config">&#9881;</a>
+      </div>
+      <nav id="pipboy-subtabs">
+        <div class="subtab-group" data-group="brief">
+          <a href="#am-brief" class="pip-subtab pip-active" data-i18n="subtab.am-brief">AM BRIEF</a>
+          <a href="#sitrep" class="pip-subtab" data-i18n="subtab.sitrep">SITREP</a>
+          <a href="#pm-brief" class="pip-subtab" data-i18n="subtab.pm-brief">PM BRIEF</a>
+        </div>
+        <div class="subtab-group hidden" data-group="travel">
+          <a href="#travel-calendar" class="pip-subtab" data-i18n="subtab.calendar">CALENDAR</a>
+        </div>
+        <div class="subtab-group hidden" data-group="llm">
+          <a href="#llm-ingest" class="pip-subtab" data-i18n="subtab.ingest">INGEST</a>
+          <a href="#llm-query" class="pip-subtab" data-i18n="subtab.query">QUERY</a>
+          <a href="#llm-healthcheck" class="pip-subtab" data-i18n="subtab.lint">LINT</a>
+          <a href="#llm-test" class="pip-subtab" data-i18n="subtab.test">TEST</a>
+        </div>
+      </nav>
+    </header>
+
+    <main id="main">
+      <div id="content-wrapper">
+        <div id="output"></div>
+      </div>
+    </main>
+
+    <footer id="footer">
+      <div id="powered-by">
+        <a href="https://anthropic.com" target="_blank" rel="noopener noreferrer">Powered by Claude</a>
+      </div>
+      <form id="input-form" autocomplete="off">
+        <input
+          id="input"
+          type="text"
+          data-i18n-placeholder="input.placeholder"
+          placeholder="Give me a command..."
+          spellcheck="false"
+          autofocus
+        />
+        <button type="submit">&#9658;</button>
+      </form>
+    </footer>
+  </div>
+
+  <script type="module" src="src/orchestrator.js"></script>
+  <script>
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('/sw.js').catch(() => {});
+    }
+  </script>
+</body>
+</html>

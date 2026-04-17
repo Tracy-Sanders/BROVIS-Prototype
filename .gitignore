@@ -1,0 +1,7 @@
+.env
+.obsidian
+SECRET/
+node_modules/
+.brovis_token.json
+client_secret*.json
+coverage/

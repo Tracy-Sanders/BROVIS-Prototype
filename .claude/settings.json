@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(find /c/Users/sande/OneDrive/Documents/BROVIS -type f \\\\\\( -name \"*.js\" -o -name \"*.json\" \\\\\\) ! -path \"*/node_modules/*\" ! -path \"*/.obsidian/*\" ! -path \"*/SECRET/*\" -exec grep -l \"password\\\\|token\\\\|secret\\\\|apiKey\\\\|api_key\" {} \\\\;)",
+      "Bash(grep -r \"\\\\+[0-9]\\\\|[0-9]\\\\{3\\\\}-[0-9]\\\\{3\\\\}-[0-9]\\\\{4\\\\}\\\\|[0-9]\\\\{3\\\\} [0-9]\\\\{3\\\\} [0-9]\\\\{4\\\\}\" /c/Users/sande/OneDrive/Documents/BROVIS --include=\"*.js\" --include=\"*.json\" --include=\"*.md\" ! -path \"*/node_modules/*\" ! -path \"*/.obsidian/*\" ! -path \"*/SECRET/*\" ! -path \"*/coverage/*\" ! -path \"*/data/*\")",
+      "Bash(grep -E \"\\\\.md$|README\")"
+    ]
+  }
+}

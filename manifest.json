@@ -1,0 +1,47 @@
+{
+  "name": "BROVIS",
+  "short_name": "BROVIS",
+  "description": "Your personal intelligence dashboard. SITREP on demand.",
+  "start_url": "/#sitrep",
+  "display": "standalone",
+  "background_color": "#0a0c0f",
+  "theme_color": "#0a0c0f",
+  "orientation": "any",
+  "icons": [
+    {
+      "src": "/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icons/brovis.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "SITREP",
+      "short_name": "SITREP",
+      "description": "Run morning SITREP",
+      "url": "/#sitrep",
+      "icons": [{ "src": "/icons/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Config",
+      "short_name": "Config",
+      "description": "Open BROVIS settings",
+      "url": "/#config",
+      "icons": [{ "src": "/icons/icon-192.png", "sizes": "192x192" }]
+    }
+  ],
+  "categories": ["productivity", "utilities"]
+}

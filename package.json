@@ -1,0 +1,41 @@
+{
+  "name": "brovis",
+  "version": "1.0.0",
+  "description": "Self-hosted J.A.R.V.I.S.-style morning dashboard. BYOK, widget architecture, no accounts, no telemetry.",
+  "type": "module",
+  "author": "Tracy Sanders",
+  "license": "MIT",
+  "homepage": "https://github.com/Tracy-Sanders/BROVIS#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Tracy-Sanders/BROVIS.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Tracy-Sanders/BROVIS/issues"
+  },
+  "keywords": ["dashboard", "morning-brief", "jarvis", "byok", "self-hosted", "widgets", "claude", "sitrep"],
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "start": "node server/index.js",
+    "dev": "nodemon server/index.js",
+    "batch": "node batch-sitrep.js",
+    "batch:watch": "nodemon --exec 'node batch-sitrep.js' --watch src/widgets --watch .env",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage"
+  },
+  "dependencies": {
+    "dotenv": "^16.6.1",
+    "express": "^4.22.1",
+    "googleapis": "^171.4.0"
+  },
+  "devDependencies": {
+    "@vitest/coverage-v8": "^4.1.4",
+    "jsdom": "^29.0.2",
+    "nodemon": "^3.1.14",
+    "supertest": "^7.2.2",
+    "vitest": "^4.1.4"
+  }
+}

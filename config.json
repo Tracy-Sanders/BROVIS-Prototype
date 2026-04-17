@@ -1,0 +1,20 @@
+{
+  "user": {
+    "name": "",
+    "location": "",
+    "units": "imperial",
+    "greeting": "direct"
+  },
+  "triggers": {
+    "sitrep": [
+      "sitrep",
+      "morning brief",
+      "morning coffee",
+      "situation report",
+      "briefing"
+    ]
+  },
+  "agents": {
+    "weather": true
+  }
+}
